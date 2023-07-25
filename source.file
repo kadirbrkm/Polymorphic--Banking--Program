@@ -1,0 +1,260 @@
+#include <iostream>
+
+#include <vector>
+
+using namespace std;
+
+class Account {
+
+public:
+
+	Account(double);
+
+	virtual void credit(double);
+
+	virtual bool debit(double);
+
+	void setBalance(double);
+
+	double getBalance();
+
+private:
+
+	double balance;
+
+};
+
+Account::Account(double initialBalance) {
+
+	if (initialBalance >= 0.0)
+
+		balance = initialBalance;
+
+	else
+
+		cout << "Not valid number." << endl;
+
+}
+
+void Account::credit(double amount)
+
+{
+
+	balance = balance + amount;
+
+}
+
+bool Account::debit(double amount)
+
+{
+
+	if (amount > balance) {
+
+		cout << "Debit amount exceeded account balance." << endl;
+
+		return false;
+
+	}
+
+	else {
+
+		balance = balance - amount;
+
+		return true;
+
+	}
+
+}
+
+void Account::setBalance(double newb)
+
+{
+
+	balance = newb;
+
+}
+
+double Account::getBalance()
+
+{
+
+	return balance;
+
+}
+
+class SavingAccount :public Account
+
+{
+
+public:
+
+	SavingAccount(double, double);
+
+	double calculateInterest();
+
+private:
+
+	double myrate;
+
+};
+
+SavingAccount::SavingAccount(double initialBalance, double rate) :Account(initialBalance)
+
+{
+
+	myrate = rate;
+
+}
+
+double SavingAccount::calculateInterest()
+
+{
+
+	return getBalance() * myrate;
+
+}
+
+
+
+class CheckingAccount :public Account
+
+{
+
+public:
+
+	CheckingAccount(double, double);
+
+	void credit(double);
+
+	bool debit(double);
+
+	void chargeFee();
+
+private:
+
+	double myfee;
+
+};
+
+CheckingAccount::CheckingAccount(double initialBalance, double fee) :Account(initialBalance)
+
+{
+
+	myfee = fee;
+
+}
+
+void CheckingAccount::credit(double amount)
+
+{
+
+	Account::credit(amount);
+
+	chargeFee();
+
+}
+
+bool CheckingAccount::debit(double amount)
+
+{
+
+	if (true == Account::debit(amount))
+
+	{
+
+		chargeFee();
+
+		return true;
+
+	}
+
+	else {
+
+		return false;
+
+	}
+
+}
+
+void CheckingAccount::chargeFee() {
+
+	Account::setBalance(getBalance() - myfee);
+
+}
+
+int main() {
+
+	const int SIZE = 3;
+
+
+
+	vector<Account*>account(SIZE);
+
+	double interest;
+
+	double withdraw;
+
+	double deposit;
+
+	account[0] = new SavingAccount(1000, 0.5);
+
+	account[1] = new CheckingAccount(1000, 0.7);
+
+	account[2] = new SavingAccount(2000, 0.4);
+
+	for (int i = 0; i < SIZE; i++) {
+
+		cout << "Processing Account number " << (i + 1) << " balance: $" << account[i]->getBalance() << endl;
+
+		
+
+		cout << "Enter amount for debit: ";
+
+		cin >> withdraw;
+
+		account[i]->debit(withdraw);
+
+		
+
+		cout << "Enter amount to credit: ";
+
+		cin >> deposit;
+
+		account[i]->credit(deposit);
+
+		
+
+		SavingAccount* sav = dynamic_cast<SavingAccount*>(account[i]);
+
+		if (sav != NULL) {
+
+			cout << "Account is of Saving type" << endl;
+
+			interest = sav->calculateInterest();
+
+			cout << "Interest owned: " << interest << endl;
+
+			sav->credit(interest);
+
+		}
+		else {
+
+			cout << "Account " << (i + 1) << " is of Checking type" << endl;
+
+		}
+
+		cout << "Final balance: " << account[i]->getBalance() << endl;
+
+		cout << endl;
+
+	}
+
+	
+
+	for (int i = 0; i < SIZE; i++)
+
+		delete account[i];
+
+	return 0;
+
+}
